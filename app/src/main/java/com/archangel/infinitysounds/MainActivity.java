@@ -1,22 +1,27 @@
 package com.archangel.infinitysounds;
 
 import android.app.Activity;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements AdapterView.OnItemClickListener {
 
     private ListView listView;
 
@@ -28,9 +33,28 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         this.listView = (ListView) findViewById(R.id.list);
         this.listView.setEmptyView(findViewById(R.id.no_sound));
-        adapter = new ArrayAdapter<Sound>(this, android.R.layout.simple_list_item_1);
-        adapter.addAll(getSounds());
-        adapter.notifyDataSetChanged();
+        adapter = new ArrayAdapter<Sound>(this, android.R.layout.simple_list_item_1, getSounds());
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(this);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Sound soundToPlay = adapter.getItem(position);
+        MediaPlayer mediaPlayer = new MediaPlayer();
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        String soundPath = "file:///android_asset/sounds/"+soundToPlay.getFile();
+        try {
+            mediaPlayer.setDataSource(soundPath);
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                public void onPrepared(MediaPlayer player) {
+                    Log.v("MainActivity", "prout");
+                    player.start();
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -52,15 +76,9 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    private static final String TAG = "MainActivity";
-
     private Sound[] getSounds() {
         InputStream json = getResources().openRawResource(R.raw.sounds);
         BufferedReader reader = new BufferedReader(new InputStreamReader(json, Charset.forName("UTF-8")));
-        Sound[] test =  new Gson().fromJson(reader, Sound[].class);
-        Log.v(TAG, test[0].toString());
-        Log.v(TAG, test[1].toString());
-        Log.v(TAG, test[2].toString());
-        return test;
+        return new Gson().fromJson(reader, Sound[].class);
     }
 }
