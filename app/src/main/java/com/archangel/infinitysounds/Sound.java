@@ -8,6 +8,10 @@ public class Sound {
     private String title;
     private String file;
 
+    public String getFile() {
+        return file;
+    }
+
     @Override
     public String toString() {
         return this.title;

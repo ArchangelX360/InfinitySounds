@@ -47,13 +47,15 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         try {
             mediaPlayer.setDataSource(soundPath);
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
                 public void onPrepared(MediaPlayer player) {
                     Log.v("MainActivity", "prout");
                     player.start();
                 }
-            });
+        });
+            mediaPlayer.prepareAsync();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("tag", e.getMessage(), e);
         }
     }
 
