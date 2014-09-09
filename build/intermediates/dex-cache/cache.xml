@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pre-dex-items>
+
+    <item
+        dex="C:\Users\Archangel\AndroidStudioProjects\InfinitySounds\app\build\intermediates\pre-dexed\debug\gson-2.2.4-81270118437ca9730121fb8cba1d4e60ca6fbc2b.jar"
+        jar="C:\Users\Archangel\.gradle\caches\modules-2\files-2.1\com.google.code.gson\gson\2.2.4\a60a5e993c98c864010053cb901b7eab25306568\gson-2.2.4.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="a60a5e993c98c864010053cb901b7eab25306568"/>
+
+</pre-dex-items>

@@ -2,6 +2,7 @@ package com.archangel.infinitysounds;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
@@ -12,6 +13,7 @@ import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 
 
 public class MainActivity extends Activity {
@@ -28,8 +30,8 @@ public class MainActivity extends Activity {
         this.listView.setEmptyView(findViewById(R.id.no_sound));
         adapter = new ArrayAdapter<Sound>(this, android.R.layout.simple_list_item_1);
         adapter.addAll(getSounds());
+        adapter.notifyDataSetChanged();
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -50,9 +52,15 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    private static final String TAG = "MainActivity";
+
     private Sound[] getSounds() {
-        InputStream json = getAssets().open("sounds.json");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(json, "UTF-8"));
-        new Gson().fromJson(reader, Sound[].class);
+        InputStream json = getResources().openRawResource(R.raw.sounds);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(json, Charset.forName("UTF-8")));
+        Sound[] test =  new Gson().fromJson(reader, Sound[].class);
+        Log.v(TAG, test[0].toString());
+        Log.v(TAG, test[1].toString());
+        Log.v(TAG, test[2].toString());
+        return test;
     }
 }
