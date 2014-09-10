@@ -1,6 +1,7 @@
 package com.archangel.infinitysounds;
 
 import android.app.Activity;
+import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -23,64 +24,70 @@ import java.nio.charset.Charset;
 
 public class MainActivity extends Activity implements AdapterView.OnItemClickListener {
 
-    private ListView listView;
+	private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
-    private ArrayAdapter<Sound> adapter;
+	private ListView listView;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        this.listView = (ListView) findViewById(R.id.list);
-        this.listView.setEmptyView(findViewById(R.id.no_sound));
-        adapter = new ArrayAdapter<Sound>(this, android.R.layout.simple_list_item_1, getSounds());
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(this);
-    }
+	private ArrayAdapter<Sound> adapter;
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Sound soundToPlay = adapter.getItem(position);
-        MediaPlayer mediaPlayer = new MediaPlayer();
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        String soundPath = "file:///android_asset/sounds/"+soundToPlay.getFile();
-        try {
-            mediaPlayer.setDataSource(soundPath);
-            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer player) {
-                    Log.v("MainActivity", "prout");
-                    player.start();
-                }
-        });
-            mediaPlayer.prepareAsync();
-        } catch (IOException e) {
-            Log.e("tag", e.getMessage(), e);
-        }
-    }
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		this.listView = (ListView) findViewById(R.id.list);
+		this.listView.setEmptyView(findViewById(R.id.no_sound));
+		adapter = new ArrayAdapter<Sound>(this, android.R.layout.simple_list_item_1, getSounds());
+		listView.setAdapter(adapter);
+		listView.setOnItemClickListener(this);
+	}
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
+	@Override
+	synchronized public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		Sound soundToPlay = adapter.getItem(position);
+		try {
+			final MediaPlayer mediaPlayer = new MediaPlayer();
+			mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+			AssetFileDescriptor afd = getAssets().openFd("sounds/" + soundToPlay.getFile());
+			mediaPlayer.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(),
+									  afd.getLength());
+			mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+				@Override
+				public void onCompletion(MediaPlayer mp) {
+					mediaPlayer.stop();
+					mediaPlayer.release();
+				}
+			});
+			mediaPlayer.prepare();
+			Log.i(LOG_TAG, "duration: " + mediaPlayer.getDuration());
+			mediaPlayer.start();
+		} catch (IOException e) {
+			Log.e(LOG_TAG, e.getMessage(), e);
+		}
+	}
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}
 
-    private Sound[] getSounds() {
-        InputStream json = getResources().openRawResource(R.raw.sounds);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(json, Charset.forName("UTF-8")));
-        return new Gson().fromJson(reader, Sound[].class);
-    }
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle action bar item clicks here. The action bar will
+		// automatically handle clicks on the Home/Up button, so long
+		// as you specify a parent activity in AndroidManifest.xml.
+		int id = item.getItemId();
+		if (id == R.id.action_settings) {
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	private Sound[] getSounds() {
+		InputStream json = getResources().openRawResource(R.raw.sounds);
+		BufferedReader reader = new BufferedReader(
+				new InputStreamReader(json, Charset.forName("UTF-8")));
+		return new Gson().fromJson(reader, Sound[].class);
+	}
 }
