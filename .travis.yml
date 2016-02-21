@@ -8,6 +8,3 @@ android:
 
     - build-tools-20.0.0
     - android-20
-
-before_install:
-  - chmod +x gradlew
