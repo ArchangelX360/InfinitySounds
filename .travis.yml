@@ -1,4 +1,13 @@
-language: java
+language: android
+
+android:
+  components:
+    # Uncomment the lines below to use the latest revision of Android SDK Tools
+    # - platform-tools
+    # - tools
+
+    - build-tools-20.0.0
+    - android-20
 
 before_install:
   - chmod +x gradlew
